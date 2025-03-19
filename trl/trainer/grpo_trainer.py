@@ -498,19 +498,19 @@ class GRPOTrainer(Trainer):
 
                 new_group_patch = new_group_context() if device_type == "npu" else contextlib.nullcontext()
                 with world_size_patch, profiling_patch, new_group_patch:
-                    self.llm = 1#LLM(
-                    #     model=model.name_or_path,
-                    #     device=vllm_device,
-                    #     gpu_memory_utilization=self.args.vllm_gpu_memory_utilization,
-                    #     dtype=self.args.vllm_dtype,
-                    #     trust_remote_code=True,
-                    #     tensor_parallel_size=2,
-                    #     # Automatic Prefix Caching caches the KV cache of existing queries, so that a new query can
-                    #     # directly reuse the KV cache if it shares the same prefix with one of the existing queries.
-                    #     # This is particularly useful here because we generate completions from the same prompts.
-                    #     enable_prefix_caching=self.args.vllm_enable_prefix_caching,
-                    #     max_model_len=self.args.vllm_max_model_len,
-                    # )
+                    self.llm = LLM(
+                        model=model.name_or_path,
+                        device=vllm_device,
+                        gpu_memory_utilization=self.args.vllm_gpu_memory_utilization,
+                        dtype=self.args.vllm_dtype,
+                        trust_remote_code=True,
+                        # tensor_parallel_size=2,
+                        # Automatic Prefix Caching caches the KV cache of existing queries, so that a new query can
+                        # directly reuse the KV cache if it shares the same prefix with one of the existing queries.
+                        # This is particularly useful here because we generate completions from the same prompts.
+                        enable_prefix_caching=self.args.vllm_enable_prefix_caching,
+                        max_model_len=self.args.vllm_max_model_len,
+                    )
 
                 # Guided decoding, if enabled
                 if args.vllm_guided_decoding_regex is not None:
@@ -793,7 +793,9 @@ class GRPOTrainer(Trainer):
             }
             group_dicts.append(group_dict)
 
-        # After processing all prompts, return a *list* of dicts, one per valid group
+        json.dump(tree,open('full_tree.json','w'))
+        print(group_dicts)
+        raise
         return group_dicts
 
     @profiling_decorator
